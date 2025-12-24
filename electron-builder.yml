@@ -1,0 +1,70 @@
+appId: com.mghosting.videowatermark
+productName: MGhosting Video Watermark
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - "**/*"
+  - "!python/venv/**"
+  - "!python/__pycache__/**"
+  - "!temp/**"
+  - "!output/**"
+  - "!data/**"
+  - "!dist/**"
+  - "!.git/**"
+  - "!*.md"
+  - "!.env"
+
+extraResources:
+  - from: python
+    to: python
+    filter:
+      - "*.py"
+      - "requirements.txt"
+  - from: ffmpeg
+    to: ffmpeg
+    filter:
+      - "**/*"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: src/assets/icons/icon.ico
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: ${productName}
+  installerIcon: src/assets/icons/icon.ico
+  uninstallerIcon: src/assets/icons/icon.ico
+  license: LICENSE
+
+mac:
+  target:
+    - dmg
+  icon: src/assets/icons/icon.icns
+  category: public.app-category.productivity
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: src/assets/icons/icon.png
+  category: Video
+
+# Publish configuration (optional)
+publish:
+  provider: github
+  owner: mghosting
+  repo: video-watermark
+  releaseType: release
+
+# Compression
+compression: normal

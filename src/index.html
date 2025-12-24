@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGhosting Video Watermark</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🎬 MGhosting Video Watermark</h1>
+                <p class="subtitle">Profesyonel Görünmez Filigran Sistemi</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-button active" data-tab="embed">
+                    <span class="tab-icon">➕</span>
+                    Filigran Ekle
+                </button>
+                <button class="tab-button" data-tab="extract">
+                    <span class="tab-icon">🔍</span>
+                    Filigran Çıkar
+                </button>
+                <button class="tab-button" data-tab="history">
+                    <span class="tab-icon">📋</span>
+                    Geçmiş
+                </button>
+                <button class="tab-button" data-tab="settings">
+                    <span class="tab-icon">⚙️</span>
+                    Ayarlar
+                </button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="tab-content active" id="embed-tab">
+                <div class="card">
+                    <h2>Video Seçimi</h2>
+                    
+                    <!-- Video Upload Area -->
+                    <div class="upload-area" id="videoUploadArea">
+                        <div class="upload-icon">🎥</div>
+                        <p class="upload-text">Videoyu buraya sürükleyin veya tıklayın</p>
+                        <p class="upload-hint">Desteklenen formatlar: MP4, AVI, MOV, MKV</p>
+                        <input type="file" id="videoFileInput" accept="video/*" hidden>
+                    </div>
+
+                    <div id="videoInfo" class="video-info hidden">
+                        <h3>📹 Video Bilgileri</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Dosya:</span>
+                                <span class="info-value" id="videoFileName"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Boyut:</span>
+                                <span class="info-value" id="videoFileSize"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Çözünürlük:</span>
+                                <span class="info-value" id="videoResolution"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Süre:</span>
+                                <span class="info-value" id="videoDuration"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Filigran Ayarları</h2>
+                    
+                    <!-- Method Selection (Key-Based Only) -->
+                    <div class="method-info">
+                        <div class="method-card selected">
+                            <div class="method-icon">🔑</div>
+                            <h3>Anahtar Tabanlı Filigran</h3>
+                            <p>Görünmez anahtar dizileri ile profesyonel koruma</p>
+                            <p class="method-benefit">✅ Hızlı işleme | ✅ Yüksek güvenilirlik | ✅ Kullanıcı takibi</p>
+                        </div>
+                    </div>
+
+                    <!-- Key-based Settings (Auto-Generated) -->
+                    <div id="keyBasedSettings" class="method-settings">
+                        <div class="info-card" style="background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4caf50; padding: 15px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <span style="font-size: 24px;">✨</span>
+                                <div>
+                                    <strong>Otomatik Benzersiz Key Üretimi</strong>
+                                    <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.7);">
+                                        Her kullanıcı için benzersiz keys ve sequence otomatik oluşturulacak. Manuel giriş gerekli değil!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="fragLengthInput">⚡ İşleme Hızı (Fragment Length)</label>
+                            <select id="fragLengthInput" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: white; font-size: 14px;">
+                                <option value="1">1 saniye - Yüksek Güvenlik (Önerilen kısa videolar için)</option>
+                                <option value="2" selected>2 saniye - Dengeli ⭐ (En çok tercih edilen)</option>
+                                <option value="5">5 saniye - Hızlı İşlem (Uzun videolar için)</option>
+                                <option value="10">10 saniye - Ultra Hızlı (Test/Önizleme)</option>
+                            </select>
+                            <small>Daha büyük değer = Daha hızlı işlem. Her X saniyede bir frame işlenir.</small>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="card">
+                    <h2>Kullanıcı Bilgileri ve İşlem</h2>
+                    
+                    <div class="form-group">
+                        <label for="userName">Kullanıcı Adı</label>
+                        <input type="text" id="userName" placeholder="Ahmet Yılmaz">
+                        <small>Filigran bu kullanıcıya atanacak</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userEmail">Email Adresi</label>
+                        <input type="email" id="userEmail" placeholder="ornek@email.com">
+                        <small>İşlem sonuçları bu adrese gönderilecek</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Çıktı Konumu</label>
+                        <div class="file-path-display" id="outputPathDisplay">
+                            <span id="outputPathText">Otomatik oluşturulacak</span>
+                            <button class="btn btn-secondary btn-small" id="selectOutputBtn">Değiştir</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <details class="advanced-settings">
+                            <summary>🔧 Gelişmiş Ayarlar</summary>
+                            <div class="advanced-content">
+                                <div class="form-group">
+                                    <label for="strengthInput">Strength (Güç)</label>
+                                    <input type="number" id="strengthInput" min="0.1" step="0.1" value="1.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stepInput">Step (Adım)</label>
+                                    <input type="number" id="stepInput" min="0.1" step="0.1" value="5.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="threadsInput">Threads (İş Parçacığı)</label>
+                                    <input type="number" id="threadsInput" min="1" max="16" value="8">
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="progressContainer" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p class="progress-text" id="progressText">İşlem başlatılıyor...</p>
+                    </div>
+
+                    <!-- Konsol Paneli -->
+                    <div id="processConsole" class="process-console hidden">
+                        <div class="console-header">
+                            <h3>📋 İşlem Konsolu</h3>
+                            <button class="console-toggle-btn" id="toggleConsoleBtn" title="Konsolu Kapat">✕</button>
+                        </div>
+                        <div class="console-content" id="consoleContent">
+                            <div class="console-message info">Konsol hazır...</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button class="btn btn-primary btn-large" id="startEmbedBtn" disabled>
+                        <span class="btn-icon">🚀</span>
+                        Filigran Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Extract Tab -->
+            <div class="tab-content" id="extract-tab">
+                <div class="card">
+                    <h2>Filigran Çıkarma</h2>
+                    
+                    <div class="upload-area" id="extractVideoUploadArea">
+                        <div class="upload-icon">🎥</div>
+                        <p class="upload-text">Filigranlı videoyu seçin</p>
+                        <input type="file" id="extractVideoInput" accept="video/*" hidden>
+                    </div>
+
+                    <div id="extractVideoInfo" class="hidden">
+                        <p><strong>Seçilen:</strong> <span id="extractVideoName"></span></p>
+                    </div>
+
+                    <div class="method-info">
+                        <div class="method-card selected">
+                            <div class="method-icon">�</div>
+                            <h3>Otomatik Kullanıcı Tespiti</h3>
+                            <p>Sistem tüm kayıtları otomatik deneyecek ve videoyu kimin indirdiğini bulacak</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card" style="background: rgba(33, 150, 243, 0.1); border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0;">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <span style="font-size: 24px;">🤖</span>
+                            <div>
+                                <strong>Tam Otomatik Tarama</strong>
+                                <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.7);">
+                                    Videoyu seçip "Kullanıcıyı Bul" butonuna basmanız yeterli. Sistem database'deki tüm kombinasyonları deneyecek ve eşleşeni bulacak!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div id="extractProgressContainer" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="extractProgressFill"></div>
+                        </div>
+                        <p class="progress-text" id="extractProgressText">İşlem başlatılıyor...</p>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" id="startExtractBtn" disabled>
+                        <span class="btn-icon">🔍</span>
+                        Kullanıcıyı Bul
+                    </button>
+
+                    <div id="extractResult" class="result-box hidden">
+                        <h3>Sonuç</h3>
+                        <pre id="extractResultContent"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="history-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>İşlem Geçmişi</h2>
+                        <div class="card-actions">
+                            <button class="btn btn-secondary" id="refreshHistoryBtn">🔄 Yenile</button>
+                            <button class="btn btn-secondary" id="exportHistoryBtn">📥 Dışa Aktar</button>
+                        </div>
+                    </div>
+
+                    <div id="historyStats" class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRecords">0</div>
+                            <div class="stat-label">Toplam İşlem</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="keyBasedCount">0</div>
+                            <div class="stat-label">Anahtar Tabanlı</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="imageBasedCount">0</div>
+                            <div class="stat-label">Görsel Tabanlı</div>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="searchHistory" placeholder="🔍 Kayıt ara...">
+                    </div>
+
+                    <div id="historyList" class="history-list">
+                        <!-- Records will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settings-tab">
+                <div class="card">
+                    <h2>Email (SMTP) Yapılandırması</h2>
+                    
+                    <form id="smtpForm" class="smtp-form">
+                        <div class="form-group">
+                            <label for="smtpHost">SMTP Host</label>
+                            <input type="text" id="smtpHost" placeholder="smtp.gmail.com" required>
+                            <small>Örnek: smtp.gmail.com, smtp.office365.com</small>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="smtpPort">Port</label>
+                                <input type="number" id="smtpPort" value="587" required>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="smtpSecure">
+                                    SSL/TLS Kullan
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="smtpUser">Email Adresi</label>
+                            <input type="email" id="smtpUser" placeholder="ornek@email.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="smtpPass">Şifre / App Password</label>
+                            <input type="password" id="smtpPass" placeholder="••••••••">
+                            <small>Gmail için App Password gereklidir</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testEmailAddress">Test Email Adresi</label>
+                            <input type="email" id="testEmailAddress" placeholder="test@example.com">
+                            <small>Test emailinin gönderileceği adres (opsiyonel, kaydedilir)</small>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">💾 Ayarları Kaydet</button>
+                            <button type="button" class="btn btn-secondary" id="testSMTPBtn">📧 Test Email Gönder</button>
+                        </div>
+                    </form>
+                    
+                    <div id="smtpStatus" class="result-box hidden"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Uygulama Ayarları</h2>
+                    
+                    
+                    <div class="form-group">
+                        <h3>Python Ortamı</h3>
+                        <p class="help-text">Python ve gerekli kütüphanelerin kurulu olup olmadığını kontrol edin.</p>
+                        <button class="btn btn-secondary" id="checkPythonBtn">🐍 Python Kontrolü</button>
+                        <div id="pythonCheckResult" class="result-box hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>FFmpeg</h3>
+                        <p class="help-text">FFmpeg'in sistem PATH'inde olup olmadığını kontrol edin.</p>
+                        <button class="btn btn-secondary" id="checkFFmpegBtn">📹 FFmpeg Kontrolü</button>
+                        <div id="ffmpegCheckResult" class="result-box hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>Geçici Dosyalar</h3>
+                        <p class="help-text">Geçici dosyaları temizleyerek disk alanı açın.</p>
+                        <button class="btn btn-secondary" id="cleanTempBtn">🧹 Geçici Dosyaları Temizle</button>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>Hakkında</h3>
+                        <div id="appInfo" class="app-info">
+                            <p><strong>Versiyon:</strong> <span id="appVersion">-</span></p>
+                            <p><strong>Platform:</strong> <span id="appPlatform">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

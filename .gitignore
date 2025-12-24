@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+python/venv/
+python/__pycache__/
+
+# Build outputs
+dist/
+build/
+
+# FFmpeg binaries
+ffmpeg/
+*.zip
+*.tar.xz
+
+# Temp files
+temp/
+output/
+
+# Environment
+.env
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Database
+data/
+*.db
+*.sqlite
+
+# Keys backup
+keys_backup/

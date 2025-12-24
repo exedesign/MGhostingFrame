@@ -1,0 +1,6 @@
+blind-video-watermark>=0.1.4
+numpy>=1.24.0
+opencv-contrib-python>=4.8.0
+dtcwt>=0.12.0
+tqdm>=4.66.0
+scipy>=1.11.0

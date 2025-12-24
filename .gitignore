@@ -37,3 +37,33 @@ data/
 
 # Keys backup
 keys_backup/
+
+# Test files and directories
+test_*.py
+test_*.mp4
+test_*.avi
+test_*.txt
+test_*.js
+test_output/
+test_watermark/
+test_audio_*/
+*_test.mp4
+*_test.py
+codec_test*.txt
+extract_test.txt
+
+# Python test files
+python/test_*.py
+python/test_*.mp4
+python/test_*.txt
+python/test_*.png
+python/test_audio_*/
+python/test_extraction_*/
+
+# Temp images
+*.png
+!src/assets/**/*.png
+!docs/**/*.png
+
+# Batch scripts (test)
+test*.bat

@@ -14,6 +14,20 @@ import subprocess
 import shutil
 from pathlib import Path
 
+# Add bundled libraries to sys.path for packaged app
+if getattr(sys, 'frozen', False):
+    # Running as compiled exe
+    bundle_dir = os.path.dirname(sys.executable)
+else:
+    # Running in development or as script
+    bundle_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Check for bundled lib folder
+lib_path = os.path.join(bundle_dir, 'lib')
+if os.path.exists(lib_path) and lib_path not in sys.path:
+    sys.path.insert(0, lib_path)
+    print(f"Added bundled libraries to sys.path: {lib_path}")
+
 # --- NUMPY FIX: complex_ dtype compatibility ---
 try:
     import numpy as np

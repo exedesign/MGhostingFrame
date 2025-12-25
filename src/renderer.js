@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeHistoryTab();
     initializeSettingsTab();
     initializeProcessConsole();
+    loadEmailSuggestions();
+    loadDefaultEmailToForm();
     
     // Load app info
     const appInfo = await window.electronAPI.getAppInfo();
@@ -205,6 +207,9 @@ async function startEmbedProcess() {
             
             showToast(`Filigran eklendi! Key: ${result.uniqueKey}`, 'success');
             
+            // Reload email suggestions to include new email
+            loadEmailSuggestions();
+            
             setTimeout(() => {
                 resetEmbedForm();
             }, 3000);
@@ -239,6 +244,10 @@ function initializeExtractTab() {
     const extractVideoUploadArea = document.getElementById('extractVideoUploadArea');
     const extractVideoInput = document.getElementById('extractVideoInput');
     const startExtractBtn = document.getElementById('startExtractBtn');
+    const extractMethodSelector = document.getElementById('extractMethodSelector');
+    const manualKeyInput = document.getElementById('manualKeyInput');
+    const autoModeRadio = document.getElementById('extractAutoMode');
+    const manualModeRadio = document.getElementById('extractManualMode');
 
     extractVideoUploadArea.addEventListener('click', () => extractVideoInput.click());
     extractVideoInput.addEventListener('change', async (e) => {
@@ -246,11 +255,23 @@ function initializeExtractTab() {
             extractVideoFile = e.target.files[0].path;
             document.getElementById('extractVideoInfo').classList.remove('hidden');
             document.getElementById('extractVideoName').textContent = e.target.files[0].name;
+            extractMethodSelector.style.display = 'block';
             startExtractBtn.disabled = false;
         }
     });
 
-    // Method selection removed - key-based only
+    // Method selection listeners
+    autoModeRadio.addEventListener('change', () => {
+        if (autoModeRadio.checked) {
+            manualKeyInput.classList.add('hidden');
+        }
+    });
+
+    manualModeRadio.addEventListener('change', () => {
+        if (manualModeRadio.checked) {
+            manualKeyInput.classList.remove('hidden');
+        }
+    });
 
     startExtractBtn.addEventListener('click', startExtractProcess);
 }
@@ -261,6 +282,14 @@ async function startExtractProcess() {
     const progressText = document.getElementById('extractProgressText');
     const resultBox = document.getElementById('extractResult');
     const resultContent = document.getElementById('extractResultContent');
+    const manualMode = document.getElementById('extractManualMode').checked;
+    const manualKey = document.getElementById('extractManualKey').value.trim();
+
+    // Validate manual mode
+    if (manualMode && !manualKey) {
+        showToast('Lütfen bir key girin', 'error');
+        return;
+    }
 
     progressContainer.classList.remove('hidden');
     resultBox.classList.add('hidden');
@@ -269,58 +298,151 @@ async function startExtractProcess() {
     document.getElementById('startExtractBtn').disabled = true;
 
     try {
-        progressText.textContent = 'Otomatik tarama başlatılıyor...';
-        progressFill.style.width = '10%';
-        addConsoleMessage('🔍 Videoda filigran aranıyor...', 'info');
-        addConsoleMessage('Database\'deki tüm kayıtlar deneniyor...', 'info');
-
-        progressFill.style.width = '50%';
-
-        const result = await window.electronAPI.extractWatermarkKey({
-            videoPath: extractVideoFile
-        });
-
-        progressFill.style.width = '100%';
-
-        if (result.success) {
-            progressText.textContent = '✅ Kullanıcı bulundu!';
-            resultBox.classList.remove('hidden');
+        if (manualMode) {
+            progressText.textContent = 'Manuel key ile çıkarma başlatılıyor...';
+            progressFill.style.width = '10%';
+            addConsoleMessage(`🔑 Manuel key kullanılıyor: ${manualKey}`, 'info');
             
-            const user = result.userInfo;
-            const validIcon = result.validated ? '✅' : '⚠️';
-            
-            addConsoleMessage(`${validIcon} EŞLEŞME BULUNDU!`, 'success');
-            addConsoleMessage(`Unique Key: ${result.uniqueKey}`, 'success');
-            addConsoleMessage(`Keys: [${result.keys.join(', ')}]`, 'info');
-            addConsoleMessage(`Sequence: ${result.sequence}`, 'info');
-            addConsoleMessage(`Kullanıcı: ${user.userName} (${user.userEmail})`, 'success');
-            addConsoleMessage(`Oluşturma: ${new Date(user.createdAt).toLocaleString('tr-TR')}`, 'info');
-            
-            if (result.validated) {
-                addConsoleMessage('✅ Doğrulama başarılı - Keys yeniden üretildi ve eşleşti', 'success');
+            progressFill.style.width = '50%';
+
+            const result = await window.electronAPI.extractWatermarkManual({
+                videoPath: extractVideoFile,
+                key: manualKey
+            });
+
+            progressFill.style.width = '100%';
+
+            if (result.success) {
+                progressText.textContent = '✅ Çıkarma tamamlandı!';
+                resultBox.classList.remove('hidden');
+                
+                addConsoleMessage('✅ Filigran başarıyla çıkarıldı', 'success');
+                addConsoleMessage(`Unique Key: ${result.uniqueKey}`, 'success');
+                addConsoleMessage(`Keys: [${result.keys.join(', ')}]`, 'info');
+                addConsoleMessage(`Sequence: ${result.sequence}`, 'info');
+                addConsoleMessage(`⏱️ İşlem Süresi: ${result.duration} saniye`, 'info');
+                
+                resultContent.innerHTML = `
+                    <div class="result-success">
+                        <div class="result-header">
+                            <span class="result-icon">✅</span>
+                            <h3>Filigran Başarıyla Çıkarıldı</h3>
+                        </div>
+                        <div class="result-details">
+                            <div class="result-item">
+                                <span class="result-label">🔑 Unique Key:</span>
+                                <span class="result-value key-value">${result.uniqueKey}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">🔢 Keys:</span>
+                                <span class="result-value">${result.keys.join(', ')}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">📊 Sequence:</span>
+                                <span class="result-value sequence-value">${result.sequence}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">⏱️ İşlem Süresi:</span>
+                                <span class="result-value">${result.duration} saniye</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                showToast('Filigran başarıyla çıkarıldı!', 'success');
             } else {
-                addConsoleMessage('⚠️ Uyarı: Keys doğrulaması tam eşleşmedi', 'warning');
+                progressText.textContent = '❌ Çıkarma başarısız';
+                addConsoleMessage('❌ Filigran çıkarılamadı', 'error');
+                addConsoleMessage(result.error, 'error');
+                throw new Error(result.error || 'Filigran çıkarılamadı');
             }
-            
-            const displayResult = {
-                '🎯 Durum': 'KULLANICI BULUNDU',
-                '🔑 Unique Key': result.uniqueKey,
-                '👤 Kullanıcı Adı': user.userName,
-                '📧 Email': user.userEmail,
-                '📅 Oluşturma': new Date(user.createdAt).toLocaleString('tr-TR'),
-                '🔢 Keys': result.keys,
-                '📊 Sequence': result.sequence,
-                '✅ Doğrulama': result.validated ? 'BAŞARILI' : 'UYARI',
-                '📁 Orijinal Video': user.videoPath
-            };
-            
-            resultContent.textContent = JSON.stringify(displayResult, null, 2);
-            showToast(`Video ${user.userName} kullanıcısına aittir!`, 'success');
         } else {
-            progressText.textContent = '❌ Kullanıcı bulunamadı';
-            addConsoleMessage('❌ Hiçbir kayıt eşleşmedi', 'error');
-            addConsoleMessage(result.error, 'error');
-            throw new Error(result.error || 'Kullanıcı bulunamadı');
+            progressText.textContent = 'Otomatik tarama başlatılıyor...';
+            progressFill.style.width = '10%';
+            addConsoleMessage('🔍 Videoda filigran aranıyor...', 'info');
+            addConsoleMessage('Database\'deki tüm kayıtlar deneniyor...', 'info');
+
+            progressFill.style.width = '50%';
+
+            const result = await window.electronAPI.extractWatermarkKey({
+                videoPath: extractVideoFile
+            });
+
+            progressFill.style.width = '100%';
+
+            if (result.success) {
+                progressText.textContent = '✅ Kullanıcı bulundu!';
+                resultBox.classList.remove('hidden');
+                
+                const user = result.userInfo;
+                const validIcon = result.validated ? '✅' : '⚠️';
+                
+                addConsoleMessage(`${validIcon} EŞLEŞME BULUNDU!`, 'success');
+                addConsoleMessage(`Unique Key: ${result.uniqueKey}`, 'success');
+                addConsoleMessage(`Keys: [${result.keys.join(', ')}]`, 'info');
+                addConsoleMessage(`Sequence: ${result.sequence}`, 'info');
+                addConsoleMessage(`Kullanıcı: ${user.userName} (${user.userEmail})`, 'success');
+                addConsoleMessage(`Oluşturma: ${new Date(user.createdAt).toLocaleString('tr-TR')}`, 'info');
+                addConsoleMessage(`⏱️ İşlem Süresi: ${result.duration} saniye`, 'info');
+                
+                if (result.validated) {
+                    addConsoleMessage('✅ Doğrulama başarılı - Keys yeniden üretildi ve eşleşti', 'success');
+                } else {
+                    addConsoleMessage('⚠️ Uyarı: Keys doğrulaması tam eşleşmedi', 'warning');
+                }
+                
+                const validationBadge = result.validated 
+                    ? '<span class="badge badge-success">✅ DOĞRULANDI</span>' 
+                    : '<span class="badge badge-warning">⚠️ UYARI</span>';
+                
+                resultContent.innerHTML = `
+                    <div class="result-success">
+                        <div class="result-header">
+                            <span class="result-icon">🎯</span>
+                            <h3>Kullanıcı Bulundu!</h3>
+                            ${validationBadge}
+                        </div>
+                        <div class="result-user-info">
+                            <div class="user-avatar">👤</div>
+                            <div class="user-details">
+                                <h4>${user.userName}</h4>
+                                <p>${user.userEmail}</p>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            <div class="result-item">
+                                <span class="result-label">🔑 Unique Key:</span>
+                                <span class="result-value key-value">${result.uniqueKey}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">🔢 Keys:</span>
+                                <span class="result-value">${result.keys.join(', ')}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">📊 Sequence:</span>
+                                <span class="result-value sequence-value">${result.sequence}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">📅 Oluşturma:</span>
+                                <span class="result-value">${new Date(user.createdAt).toLocaleString('tr-TR')}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">⏱️ İşlem Süresi:</span>
+                                <span class="result-value">${result.duration} saniye</span>
+                            </div>
+                            <div class="result-item full-width">
+                                <span class="result-label">📁 Orijinal Video:</span>
+                                <span class="result-value video-path">${user.videoPath}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                showToast(`Video ${user.userName} kullanıcısına aittir!`, 'success');
+            } else {
+                progressText.textContent = '❌ Kullanıcı bulunamadı';
+                addConsoleMessage('❌ Hiçbir kayıt eşleşmedi', 'error');
+                addConsoleMessage(result.error, 'error');
+                throw new Error(result.error || 'Kullanıcı bulunamadı');
+            }
         }
 
     } catch (error) {
@@ -387,14 +509,21 @@ function createHistoryItem(record) {
     const methodIcon = record.method === 'key-based' ? '🔑' : '🖼️';
     const methodText = record.method === 'key-based' ? 'Anahtar Tabanlı' : 'Görsel Tabanlı';
     
+    // User info section
+    const userInfo = record.userName || record.userEmail 
+        ? `<p><strong>👤 Kullanıcı:</strong> ${record.userName || 'N/A'} ${record.userEmail ? `(${record.userEmail})` : ''}</p>`
+        : '';
+    
     let details = '';
     if (record.method === 'key-based') {
         details = `
+            ${userInfo}
             <p><strong>Anahtarlar:</strong> ${record.keys?.join(', ') || 'N/A'}</p>
             <p><strong>Sekans:</strong> ${record.sequence || 'N/A'}</p>
         `;
     } else {
         details = `
+            ${userInfo}
             <p><strong>Anahtar:</strong> ${record.key}</p>
         `;
     }
@@ -444,12 +573,23 @@ async function exportHistory() {
 function initializeSettingsTab() {
     loadSMTPSettings();
     loadTestEmail();
+    loadDefaultEmail();
     
     document.getElementById('smtpForm').addEventListener('submit', saveSMTPSettings);
     document.getElementById('testSMTPBtn').addEventListener('click', testSMTPEmail);
+    document.getElementById('saveDefaultEmailBtn').addEventListener('click', saveDefaultEmail);
     document.getElementById('checkPythonBtn').addEventListener('click', checkPython);
     document.getElementById('checkFFmpegBtn').addEventListener('click', checkFFmpeg);
     document.getElementById('cleanTempBtn').addEventListener('click', cleanTemp);
+    document.getElementById('deleteHistoryBtn').addEventListener('click', showDeleteHistoryModal);
+    
+    // Modal controls
+    document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteHistoryModal);
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDeleteHistory);
+    document.getElementById('verificationInput').addEventListener('input', checkVerificationCode);
+    
+    // Close modal on overlay click
+    document.querySelector('.modal-overlay').addEventListener('click', hideDeleteHistoryModal);
 }
 
 async function loadSMTPSettings() {
@@ -465,6 +605,52 @@ async function loadSMTPSettings() {
         if (settings.hasPassword) {
             document.getElementById('smtpPass').placeholder = '••••••••• (Kayıtlı)';
         }
+    }
+}
+
+async function loadDefaultEmail() {
+    const result = await window.electronAPI.getDefaultEmail();
+    
+    if (result.success && result.email) {
+        document.getElementById('defaultEmail').value = result.email;
+    }
+}
+
+async function saveDefaultEmail() {
+    const emailsInput = document.getElementById('defaultEmail').value;
+    
+    if (!emailsInput || !emailsInput.trim()) {
+        showToast('Lütfen en az bir email adresi girin', 'error');
+        return;
+    }
+    
+    // Parse comma-separated emails
+    const emails = emailsInput.split(',').map(e => e.trim()).filter(e => e);
+    
+    if (emails.length === 0) {
+        showToast('Lütfen geçerli email adresi girin', 'error');
+        return;
+    }
+    
+    // Validate each email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = emails.filter(email => !emailRegex.test(email));
+    
+    if (invalidEmails.length > 0) {
+        showToast(`Geçersiz email adresleri: ${invalidEmails.join(', ')}`, 'error');
+        return;
+    }
+    
+    // Save comma-separated string
+    const result = await window.electronAPI.saveDefaultEmail(emailsInput.trim());
+    
+    if (result.success) {
+        const count = emails.length;
+        showToast(`${count} email adresi kaydedildi`, 'success');
+        // Update embed form with first email
+        document.getElementById('userEmail').value = emails[0];
+    } else {
+        showToast('Email kaydedilemedi', 'error');
     }
 }
 
@@ -606,7 +792,121 @@ async function cleanTemp() {
     }
 }
 
+// Delete History Modal Functions
+let currentVerificationCode = '';
+
+function showDeleteHistoryModal() {
+    // Generate random 4-digit code
+    currentVerificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // Display code
+    document.getElementById('verificationCode').textContent = currentVerificationCode;
+    
+    // Reset input
+    document.getElementById('verificationInput').value = '';
+    document.getElementById('confirmDeleteBtn').disabled = true;
+    
+    // Show modal
+    document.getElementById('deleteHistoryModal').classList.remove('hidden');
+}
+
+function hideDeleteHistoryModal() {
+    document.getElementById('deleteHistoryModal').classList.add('hidden');
+    currentVerificationCode = '';
+}
+
+function checkVerificationCode() {
+    const input = document.getElementById('verificationInput').value;
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (input === currentVerificationCode) {
+        confirmBtn.disabled = false;
+    } else {
+        confirmBtn.disabled = true;
+    }
+}
+
+async function confirmDeleteHistory() {
+    const input = document.getElementById('verificationInput').value;
+    
+    if (input !== currentVerificationCode) {
+        showToast('Doğrulama kodu hatalı', 'error');
+        return;
+    }
+    
+    hideDeleteHistoryModal();
+    showToast('Geçmiş siliniyor...', 'info');
+    
+    try {
+        const result = await window.electronAPI.deleteAllHistory();
+        
+        if (result.success) {
+            showToast('Tüm geçmiş başarıyla silindi', 'success');
+            
+            // Refresh history tab if it's active
+            const historyTab = document.getElementById('history-tab');
+            if (!historyTab.classList.contains('hidden')) {
+                loadHistory();
+            }
+        } else {
+            showToast('Geçmiş silinirken hata oluştu: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showToast('İşlem sırasında hata oluştu', 'error');
+        console.error('Delete history error:', error);
+    }
+}
+
 // Utility Functions
+async function loadEmailSuggestions() {
+    try {
+        const records = await window.electronAPI.getAllRecords();
+        
+        if (records.success && records.records) {
+            // Get unique emails from records
+            const emails = new Set();
+            records.records.forEach(record => {
+                if (record.userEmail && record.userEmail.trim()) {
+                    emails.add(record.userEmail.trim());
+                }
+            });
+            
+            // Populate datalist
+            const datalist = document.getElementById('emailSuggestions');
+            datalist.innerHTML = '';
+            
+            emails.forEach(email => {
+                const option = document.createElement('option');
+                option.value = email;
+                datalist.appendChild(option);
+            });
+            
+            console.log(`Loaded ${emails.size} unique email addresses`);
+        }
+    } catch (error) {
+        console.error('Failed to load email suggestions:', error);
+    }
+}
+
+async function loadDefaultEmailToForm() {
+    try {
+        const result = await window.electronAPI.getDefaultEmail();
+        
+        if (result.success && result.email) {
+            // If multiple emails, use the first one
+            const emails = result.email.split(',').map(e => e.trim()).filter(e => e);
+            const firstEmail = emails.length > 0 ? emails[0] : result.email;
+            
+            const emailInput = document.getElementById('userEmail');
+            if (emailInput && !emailInput.value) {
+                emailInput.value = firstEmail;
+            }
+        }
+    } catch (error) {
+        console.error('Default email load error:', error);
+    }
+}
+
 function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 Bytes';

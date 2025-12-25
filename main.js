@@ -25,7 +25,7 @@ function createWindow() {
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js')
         },
-        icon: path.join(__dirname, 'src/assets/icons/icon.png'),
+        icon: path.join(__dirname, 'icon-1766657565896.png'),
         title: 'MGhosting Video Watermark',
         backgroundColor: '#1e1e1e',
         show: false
@@ -212,6 +212,17 @@ ipcMain.handle('embed-watermark-key', async (event, data) => {
 
             // 5. Send email if configured
             if (userEmail && emailService.isConfigured()) {
+                // Get default emails if available
+                const appSettings = require('./backend/appSettings');
+                const defaultEmails = appSettings.get('defaultEmail') || '';
+                
+                // Parse comma-separated emails
+                const additionalEmails = defaultEmails
+                    .split(',')
+                    .map(e => e.trim())
+                    .filter(e => e && e !== userEmail); // Exclude the main email
+                
+                // Send to main email
                 await emailService.sendWatermarkEmail({
                     to: userEmail,
                     userName,
@@ -222,6 +233,25 @@ ipcMain.handle('embed-watermark-key', async (event, data) => {
                     uniqueKey,
                     recordId: record.id
                 });
+                
+                // Send to additional emails
+                for (const email of additionalEmails) {
+                    try {
+                        await emailService.sendWatermarkEmail({
+                            to: email,
+                            userName,
+                            videoName: path.basename(videoPath),
+                            method: 'key-based',
+                            keys,
+                            sequence,
+                            uniqueKey,
+                            recordId: record.id
+                        });
+                        console.log(`Email sent to additional address: ${email}`);
+                    } catch (error) {
+                        console.error(`Failed to send email to ${email}:`, error.message);
+                    }
+                }
             }
 
             return {
@@ -250,6 +280,7 @@ ipcMain.handle('embed-watermark-key', async (event, data) => {
 
 // Extract watermark (key-based) - AUTO-SEARCH ALL RECORDS
 ipcMain.handle('extract-watermark-key', async (event, data) => {
+    const startTime = Date.now();
     try {
         const { videoPath, outputFolder } = data;
 
@@ -301,6 +332,9 @@ ipcMain.handle('extract-watermark-key', async (event, data) => {
 
                     console.log(`  Validation: ${isValidated ? '✅ PASSED' : '⚠️ WARNING'}`);
 
+                    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+                    console.log(`  ⏱️ Toplam Süre: ${duration} saniye`);
+
                     return {
                         success: true,
                         uniqueKey: record.key,
@@ -315,6 +349,7 @@ ipcMain.handle('extract-watermark-key', async (event, data) => {
                         },
                         validated: isValidated,
                         outputFolder: result.output_folder,
+                        duration: duration,
                         message: `Video ${record.userName} kullanıcısına aittir!`
                     };
                 }
@@ -335,6 +370,62 @@ ipcMain.handle('extract-watermark-key', async (event, data) => {
 
     } catch (error) {
         console.error('Extract watermark error:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+// Extract watermark (key-based) - MANUAL KEY
+ipcMain.handle('extract-watermark-manual', async (event, data) => {
+    const startTime = Date.now();
+    try {
+        const { videoPath, key, outputFolder } = data;
+
+        console.log('\n=== MANUAL EXTRACTION START ===');
+        console.log('Video:', videoPath);
+        console.log('Key:', key);
+
+        // Generate keys from provided key
+        const generated = generateKeysFromUniqueKey(key);
+        console.log('Generated Keys:', generated.keys);
+        console.log('Generated Sequence:', generated.sequence);
+
+        const result = await processManager.extractWatermarkKey({
+            videoPath,
+            keys: generated.keys,
+            fragLength: 2,
+            outputFolder: outputFolder || path.join(__dirname, 'output', `extract_${Date.now()}`)
+        });
+
+        // Check if extraction was successful
+        if (result.success && result.detected_sequence && !result.detected_sequence.includes('#')) {
+            console.log('\n✅ EXTRACTION SUCCESSFUL');
+            console.log(`  Detected Sequence: ${result.detected_sequence}`);
+
+            const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+            console.log(`  ⏱️ Toplam Süre: ${duration} saniye`);
+
+            return {
+                success: true,
+                uniqueKey: key,
+                keys: generated.keys,
+                sequence: result.detected_sequence,
+                duration: duration,
+                outputFolder: result.output_folder,
+                message: 'Filigran başarıyla çıkarıldı!'
+            };
+        } else {
+            console.log('❌ Extraction failed or incomplete');
+            return {
+                success: false,
+                error: 'Filigran çıkarılamadı. Key yanlış olabilir.'
+            };
+        }
+
+    } catch (error) {
+        console.error('Manual extract watermark error:', error);
         return {
             success: false,
             error: error.message
@@ -371,6 +462,33 @@ ipcMain.handle('get-record-by-id', async (event, recordId) => {
         };
     } catch (error) {
         console.error('Get record by ID error:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+// Delete all history
+ipcMain.handle('delete-all-history', async () => {
+    try {
+        console.log('\n⚠️  DELETE ALL HISTORY REQUESTED');
+        
+        // Get database file path
+        const dbPath = keyStorage.getDbPath();
+        
+        // Delete all records from database
+        await keyStorage.deleteAllRecords();
+        
+        console.log('✅ All records deleted from database');
+        
+        return {
+            success: true,
+            message: 'Tüm geçmiş başarıyla silindi'
+        };
+
+    } catch (error) {
+        console.error('Delete all history error:', error);
         return {
             success: false,
             error: error.message
@@ -505,6 +623,40 @@ ipcMain.handle('save-test-email', async (event, emailAddress) => {
         return {
             success: true,
             message: 'Test email address saved'
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+// Get default email address
+ipcMain.handle('get-default-email', async () => {
+    try {
+        const appSettings = require('./backend/appSettings');
+        const defaultEmail = appSettings.get('defaultEmail');
+        return {
+            success: true,
+            email: defaultEmail
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+// Save default email address
+ipcMain.handle('save-default-email', async (event, emailAddress) => {
+    try {
+        const appSettings = require('./backend/appSettings');
+        appSettings.set('defaultEmail', emailAddress);
+        return {
+            success: true,
+            message: 'Default email address saved'
         };
     } catch (error) {
         return {

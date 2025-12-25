@@ -25,14 +25,15 @@
     "adm-zip": "^0.5.10",
     "dotenv": "^16.3.1",
     "electron-store": "^8.1.0",
-    "nodemailer": "^6.9.7",
-    "uuid": "^9.0.1",
     "lowdb": "^6.1.1",
-    "seek-bzip": "^1.0.6"
+    "nodemailer": "^6.9.7",
+    "seek-bzip": "^1.0.6",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
+    "electron-packager": "^17.1.2",
     "electron-reloader": "^1.2.3"
   },
   "build": {
@@ -50,13 +51,18 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "src/assets/icons/icon.ico"
+      "icon": "src/assets/icons/icon.ico",
+      "sign": null,
+      "verifyUpdateCodeSignature": false
     },
     "extraResources": [
       {
         "from": "python",
         "to": "python",
-        "filter": ["*.py", "requirements.txt"]
+        "filter": [
+          "*.py",
+          "requirements.txt"
+        ]
       }
     ]
   }

@@ -104,7 +104,7 @@ Geliştirme modu için (DevTools açık):
 npm run dev
 ```
 
-## 🔧 Sorun Giderme
+##  Sorun Giderme
 
 ### Python Hatası: "blind-video-watermark not found"
 ```bash

@@ -12,11 +12,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Watermark operations
     embedWatermarkKey: (data) => ipcRenderer.invoke('embed-watermark-key', data),
     extractWatermarkKey: (data) => ipcRenderer.invoke('extract-watermark-key', data),
+    extractWatermarkManual: (data) => ipcRenderer.invoke('extract-watermark-manual', data),
 
     // Records management
     getAllRecords: () => ipcRenderer.invoke('get-all-records'),
     getRecordById: (id) => ipcRenderer.invoke('get-record-by-id', id),
     exportRecords: () => ipcRenderer.invoke('export-records'),
+    deleteAllHistory: () => ipcRenderer.invoke('delete-all-history'),
 
     // Utility
     cleanTemp: () => ipcRenderer.invoke('clean-temp'),
@@ -28,6 +30,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     sendTestEmail: (email) => ipcRenderer.invoke('send-test-email', email),
     getTestEmail: () => ipcRenderer.invoke('get-test-email'),
     saveTestEmail: (email) => ipcRenderer.invoke('save-test-email', email),
+    
+    // Default Email
+    getDefaultEmail: () => ipcRenderer.invoke('get-default-email'),
+    saveDefaultEmail: (email) => ipcRenderer.invoke('save-default-email', email),
 
     // Key Management
     generateUniqueKey: () => ipcRenderer.invoke('generate-unique-key'),

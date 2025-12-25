@@ -11,8 +11,13 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1>🎬 MGhosting Video Watermark</h1>
-                <p class="subtitle">Profesyonel Görünmez Filigran Sistemi</p>
+                <div class="header-text">
+                    <h1><img src="../icon-1766657565896.png" alt="Logo" class="title-logo"> MGhosting Video Watermark</h1>
+                    <p class="subtitle">Profesyonel Görünmez Filigran Sistemi</p>
+                </div>
+                <div class="header-logo">
+                    <img src="../icon-1766657565896.png" alt="MGhosting Logo" class="header-logo-img">
+                </div>
             </div>
         </header>
 
@@ -102,7 +107,7 @@
                         </div>
                         <div class="form-group">
                             <label for="fragLengthInput">⚡ İşleme Hızı (Fragment Length)</label>
-                            <select id="fragLengthInput" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; color: white; font-size: 14px;">
+                            <select id="fragLengthInput">
                                 <option value="1">1 saniye - Yüksek Güvenlik (Önerilen kısa videolar için)</option>
                                 <option value="2" selected>2 saniye - Dengeli ⭐ (En çok tercih edilen)</option>
                                 <option value="5">5 saniye - Hızlı İşlem (Uzun videolar için)</option>
@@ -126,7 +131,10 @@
 
                     <div class="form-group">
                         <label for="userEmail">Email Adresi</label>
-                        <input type="email" id="userEmail" placeholder="ornek@email.com">
+                        <input type="email" id="userEmail" placeholder="ornek@email.com" list="emailSuggestions">
+                        <datalist id="emailSuggestions">
+                            <!-- Email suggestions will be loaded here -->
+                        </datalist>
                         <small>İşlem sonuçları bu adrese gönderilecek</small>
                     </div>
 
@@ -190,54 +198,59 @@
                 <div class="card">
                     <h2>Filigran Çıkarma</h2>
                     
-                    <div class="upload-area" id="extractVideoUploadArea">
-                        <div class="upload-icon">🎥</div>
-                        <p class="upload-text">Filigranlı videoyu seçin</p>
-                        <input type="file" id="extractVideoInput" accept="video/*" hidden>
-                    </div>
-
-                    <div id="extractVideoInfo" class="hidden">
-                        <p><strong>Seçilen:</strong> <span id="extractVideoName"></span></p>
-                    </div>
-
-                    <div class="method-info">
-                        <div class="method-card selected">
-                            <div class="method-icon">�</div>
-                            <h3>Otomatik Kullanıcı Tespiti</h3>
-                            <p>Sistem tüm kayıtları otomatik deneyecek ve videoyu kimin indirdiğini bulacak</p>
-                        </div>
-                    </div>
-
-                    <div class="info-card" style="background: rgba(33, 150, 243, 0.1); border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0;">
-                        <div style="display: flex; align-items: start; gap: 10px;">
-                            <span style="font-size: 24px;">🤖</span>
-                            <div>
-                                <strong>Tam Otomatik Tarama</strong>
-                                <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.7);">
-                                    Videoyu seçip "Kullanıcıyı Bul" butonuna basmanız yeterli. Sistem database'deki tüm kombinasyonları deneyecek ve eşleşeni bulacak!
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    <div id="extractProgressContainer" class="progress-container hidden">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="extractProgressFill"></div>
-                        </div>
-                        <p class="progress-text" id="extractProgressText">İşlem başlatılıyor...</p>
-                    </div>
-
-                    <button class="btn btn-primary btn-large" id="startExtractBtn" disabled>
-                        <span class="btn-icon">🔍</span>
-                        Kullanıcıyı Bul
-                    </button>
-
                     <div id="extractResult" class="result-box hidden">
-                        <h3>Sonuç</h3>
-                        <pre id="extractResultContent"></pre>
+                        <div id="extractResultContent"></div>
                     </div>
+                    
+                    <div class="upload-area" id="extractVideoUploadArea">
+                                <div class="upload-icon">🎥</div>
+                                <p class="upload-text">Filigranlı videoyu seçin</p>
+                                <input type="file" id="extractVideoInput" accept="video/*" hidden>
+                            </div>
+
+                            <div id="extractVideoInfo" class="hidden">
+                                <p><strong>Seçilen:</strong> <span id="extractVideoName"></span></p>
+                            </div>
+
+                            <div class="method-selector" id="extractMethodSelector" style="margin: 20px 0; display: none;">
+                                <div class="method-option" data-method="auto">
+                                    <input type="radio" id="extractAutoMode" name="extractMethod" value="auto" checked>
+                                    <label for="extractAutoMode">
+                                        <div class="method-icon">🤖</div>
+                                        <div class="method-details">
+                                            <strong>Otomatik Arama</strong>
+                                            <p>Tüm kayıtlar taranır ve kullanıcı bulunur</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="method-option" data-method="manual">
+                                    <input type="radio" id="extractManualMode" name="extractMethod" value="manual">
+                                    <label for="extractManualMode">
+                                        <div class="method-icon">🔑</div>
+                                        <div class="method-details">
+                                            <strong>Manuel Key</strong>
+                                            <p>Belirli bir key ile çıkarma</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="manualKeyInput" class="form-group hidden" style="margin: 15px 0;">
+                                <label for="extractManualKey">Çıkarma Key'i:</label>
+                                <input type="text" id="extractManualKey" class="form-input" placeholder="Örn: user123_20231225" style="width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); border-radius: 8px; color: white;">
+                            </div>
+
+                            <div id="extractProgressContainer" class="progress-container hidden">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="extractProgressFill"></div>
+                                </div>
+                                <p class="progress-text" id="extractProgressText">İşlem başlatılıyor...</p>
+                            </div>
+
+                            <button class="btn btn-primary btn-large" id="startExtractBtn" disabled>
+                                <span class="btn-icon">🔍</span>
+                                Kullanıcıyı Bul
+                            </button>
                 </div>
             </div>
 
@@ -331,6 +344,13 @@
                 <div class="card">
                     <h2>Uygulama Ayarları</h2>
                     
+                    <div class="form-group">
+                        <label for="defaultEmail">Varsayılan Email Adresi (Çoklu)</label>
+                        <p class="help-text">Filigran ekleme işleminde otomatik doldurulacak email adreslerini tanımlayın. Birden fazla email eklemek için virgül (,) ile ayırın. İlk email otomatik olarak forma yüklenir.</p>
+                        <input type="text" id="defaultEmail" placeholder="email1@test.com, email2@test.com">
+                        <small>💡 İpucu: Farklı projeler veya müşteriler için birden fazla email ekleyebilirsiniz</small>
+                        <button type="button" class="btn btn-primary" id="saveDefaultEmailBtn" style="margin-top: 10px;">💾 Kaydet</button>
+                    </div>
                     
                     <div class="form-group">
                         <h3>Python Ortamı</h3>
@@ -352,11 +372,48 @@
                         <button class="btn btn-secondary" id="cleanTempBtn">🧹 Geçici Dosyaları Temizle</button>
                     </div>
 
-                    <div class="form-group">
-                        <h3>Hakkında</h3>
-                        <div id="appInfo" class="app-info">
-                            <p><strong>Versiyon:</strong> <span id="appVersion">-</span></p>
-                            <p><strong>Platform:</strong> <span id="appPlatform">-</span></p>
+                    <div class="form-group danger-zone">
+                        <h3>⚠️ Tehlikeli İşlemler</h3>
+                        <p class="help-text danger-text">Aşağıdaki işlemler geri alınamaz! Dikkatli olun.</p>
+                        
+                        <div class="danger-action">
+                            <div class="danger-action-header">
+                                <span class="danger-icon">🗑️</span>
+                                <div>
+                                    <h4>Tüm Geçmişi Sil</h4>
+                                    <p>Tüm filigran kayıtları ve geçmiş kalıcı olarak silinecektir.</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" id="deleteHistoryBtn">Geçmişi Sil</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group about-section">
+                        <div class="about-card">
+                            <div class="about-content">
+                                <div class="about-left">
+                                    <h4 class="about-title">MGhosting Video Watermark</h4>
+                                    <p class="about-subtitle">v<span id="appVersion">-</span> • <span id="appPlatform">-</span></p>
+                                </div>
+                                
+                                <div class="about-divider"></div>
+                                
+                                <div class="about-center">
+                                    <p class="creator-text">Fatih Eke</p>
+                                    <a href="https://github.com/exedesign/MGhostingFrame" target="_blank" class="github-link">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                        </svg>
+                                        <span>GitHub</span>
+                                    </a>
+                                </div>
+                                
+                                <div class="about-divider"></div>
+                                
+                                <div class="about-right">
+                                    <span class="made-badge">Türkiye'den ❤️ ile</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -367,6 +424,39 @@
     <!-- Notification Toast -->
     <div id="toast" class="toast hidden">
         <span id="toastMessage"></span>
+    </div>
+
+    <!-- Delete History Confirmation Modal -->
+    <div id="deleteHistoryModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header danger">
+                <span class="modal-icon">⚠️</span>
+                <h2>Tüm Geçmişi Sil</h2>
+            </div>
+            <div class="modal-body">
+                <div class="warning-box">
+                    <p><strong>DİKKAT:</strong> Bu işlem geri alınamaz!</p>
+                    <ul>
+                        <li>Tüm filigran kayıtları silinecek</li>
+                        <li>Kullanıcı bilgileri ve key'ler kaybolacak</li>
+                        <li>İşlem geçmişi tamamen temizlenecek</li>
+                    </ul>
+                </div>
+                
+                <div class="verification-box">
+                    <p>Devam etmek için aşağıdaki <strong>4 haneli kodu</strong> girin:</p>
+                    <div class="verification-code">
+                        <span id="verificationCode">0000</span>
+                    </div>
+                    <input type="text" id="verificationInput" class="form-input" placeholder="4 haneli kodu buraya yazın" maxlength="4" autocomplete="off">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">İptal</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn" disabled>Evet, Tüm Geçmişi Sil</button>
+            </div>
+        </div>
     </div>
 
     <script src="renderer.js"></script>

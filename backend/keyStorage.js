@@ -229,6 +229,20 @@ class KeyStorage {
     }
 
     /**
+     * Delete all records
+     */
+    async deleteAllRecords() {
+        if (!this.initialized) {
+            await this.initialize();
+        }
+
+        this.records = [];
+        await this.saveToFile();
+
+        return { success: true };
+    }
+
+    /**
      * Search records
      */
     async searchRecords(query) {
@@ -498,6 +512,13 @@ class KeyStorage {
             success: true, 
             message: `Cleared ${count} records` 
         };
+    }
+
+    /**
+     * Get database file path
+     */
+    getDbPath() {
+        return this.dbPath;
     }
 }
 
